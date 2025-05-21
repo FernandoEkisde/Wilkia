@@ -36,6 +36,6 @@ Creada con Flet, Wilkia aprovecha la potencia de Python para ofrecer una experie
 1. Clonar el repositorio:
 
    ```bash
-   git clone https://github.com/tu_usuario/wilkia.git
+   git clone https://github.com/FernandoEkisde/wilkia.git
    cd wilkia
 
