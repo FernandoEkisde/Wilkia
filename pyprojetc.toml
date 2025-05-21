@@ -1,0 +1,14 @@
+[project]
+name = "Wilkia"
+version = "0.0.1"
+description = "Aplicación hecha con Flet"
+authors = [
+  { name = "Fernando", email = "trabajosfernandod@gmail.com"}
+]
+readme = "README.md"
+license = { text = "MIT" }
+dependencies = [
+  "flet"
+]
+requires-python = ">=3.13"
+
