@@ -1,99 +1,142 @@
 import flet as ft
 
-def calcular_wilks(sexo, peso, levantado):
-    if sexo.lower() == "masculino":
-        a, b, c, d, e, f = -216.0475144, 16.2606339, -0.002388645, -0.00113732, 7.01863E-06, -1.291E-08
-    else:  # femenino
-        a, b, c, d, e, f = 594.31747775582, -27.23842536447, 0.82112226871, -0.00930733913, 0.00004731582, -0.00000009054
-
-    coef = 500 / (
-        a + b*peso + c*peso**2 + d*peso**3 + e*peso**4 + f*peso**5
-    )
-    return coef * levantado
-
 def main(page: ft.Page):
-    page.title = "Wilkia"
-    page.theme_mode = ft.ThemeMode.LIGHT
-    participantes = []
-    drawer = ft.NavigationDrawer()
+    page.scroll = "auto"
 
-    output = ft.Text()
-    nombre_input = ft.TextField(label="Nombre del participante")
-    peso_input = ft.TextField(label="Peso corporal (kg)", keyboard_type=ft.KeyboardType.NUMBER)
-    levantado_input = ft.TextField(label="Peso levantado (kg)", keyboard_type=ft.KeyboardType.NUMBER)
-    sexo_dropdown = ft.Dropdown(
-        label="Sexo",
-        options=[ft.dropdown.Option("Masculino"), ft.dropdown.Option("Femenino")]
+    participantes = []
+    tabla_resultados = ft.DataTable(
+        columns=[
+            ft.DataColumn(label=ft.Text("ID")),
+            ft.DataColumn(label=ft.Text("Nombre")),
+            ft.DataColumn(label=ft.Text("Promedio Wilks")),
+            ft.DataColumn(label=ft.Text("Peso Máximo")),
+        ],
+        rows=[]
     )
 
-    resultado_info = ft.Text("Selecciona un participante para ver sus datos.", selectable=True)
+    resultado = ft.Text("", size=16, weight="bold")
+    contenedor_participantes = ft.Column(scroll="auto", expand=True)
+
+    def calcular_puntos(wilks_coef, peso_levantado):
+        return wilks_coef * peso_levantado
 
     def agregar_participante(e):
-        try:
-            nombre = nombre_input.value
-            peso = float(peso_input.value)
-            levantado = float(levantado_input.value)
-            sexo = sexo_dropdown.value
-
-            puntos = calcular_wilks(sexo, peso, levantado)
-            id_participante = len(participantes) + 1
-
-            info = {
-                "id": id_participante,
-                "nombre": nombre,
-                "sexo": sexo,
-                "peso": peso,
-                "levantado": levantado,
-                "wilks": round(puntos, 2)
-            }
-            participantes.append(info)
-
-            drawer.controls.append(
-                ft.NavigationDrawerDestination(
-                    icon=ft.Icon(ft.Icons.PERSON),
-                    label=f"{id_participante}. {nombre}",
-                    selected_icon=ft.Icon(ft.Icons.CHECK),
-                    data=info
-                )
-            )
-            page.update()
-            output.value = f"{nombre} agregado con {round(puntos,2)} puntos Wilks."
-            nombre_input.value = peso_input.value = levantado_input.value = ""
-        except Exception as ex:
-            output.value = f"Error: {str(ex)}"
-        page.update()
-
-    def mostrar_drawer(e):
-        page.drawer = drawer
-        page.drawer.open = True
-        page.update()
-
-    def drawer_change(e):
-        data = e.control.controls[e.control.selected_index].data
-        resultado_info.value = (
-            f"Nombre: {data['nombre']}\n"
-            f"Sexo: {data['sexo']}\n"
-            f"Peso corporal: {data['peso']} kg\n"
-            f"Peso levantado: {data['levantado']} kg\n"
-            f"Puntos Wilks: {data['wilks']}"
-        )
-        page.update()
-
-    drawer.on_change = drawer_change
-
-    page.add(
-        ft.Column([
-            ft.Text("Calculadora sencilla de puntos Wilks.", size=24, weight="bold"),
-            nombre_input,
-            peso_input,
-            levantado_input,
-            sexo_dropdown,
-            ft.ElevatedButton("Agregar participante", on_click=agregar_participante),
-            output,
-            ft.ElevatedButton("Mostrar lista de participantes", on_click=mostrar_drawer),
-            resultado_info
+        id_participante = len(participantes) + 1
+        nombre = ft.TextField(label=f"Nombre del Participante {id_participante}")
+        sexo = ft.Dropdown(label="Sexo", options=[
+            ft.dropdown.Option("Masculino"),
+            ft.dropdown.Option("Femenino")
         ])
+        peso_corporal = ft.TextField(label="Peso corporal (kg)", keyboard_type=ft.KeyboardType.NUMBER)
+
+        intentos = []
+
+        def agregar_intento(e=None):
+            intento_num = len(intentos) + 1
+            intento_peso = ft.TextField(label=f"Intento N°{intento_num} (kg)", keyboard_type=ft.KeyboardType.NUMBER)
+            intentos.append(intento_peso)
+            intentos_column.controls.append(intento_peso)
+            page.update()
+
+        intentos_column = ft.Column()
+        agregar_intento()  # Añade el primer intento por defecto
+
+        contenedor = ft.Container(
+            content=ft.Column([
+                nombre,
+                sexo,
+                peso_corporal,
+                intentos_column,
+                ft.ElevatedButton("Agregar Intento", on_click=agregar_intento),
+            ]),
+            border=ft.border.all(1),
+            padding=10,
+            margin=5
+        )
+
+        participantes.append({
+            "id": id_participante,
+            "nombre": nombre,
+            "sexo": sexo,
+            "peso": peso_corporal,
+            "intentos": intentos
+        })
+
+        contenedor_participantes.controls.append(contenedor)
+        page.update()
+
+    def mostrar_ganador(e):
+        mejor = None
+        for p in participantes:
+            try:
+                peso = float(p["peso"].value)
+                sexo = p["sexo"].value
+                wilks_coef = 0.0
+
+                # Wilks coefficient (simplificado, puedes poner fórmula real si gustas)
+                if sexo == "Masculino":
+                    wilks_coef = 0.60
+                elif sexo == "Femenino":
+                    wilks_coef = 0.65
+
+                puntos = []
+                for intento in p["intentos"]:
+                    try:
+                        peso_intento = float(intento.value)
+                        puntos.append(calcular_puntos(wilks_coef, peso_intento))
+                    except:
+                        continue
+
+                promedio = sum(puntos) / len(puntos) if puntos else 0
+
+                if mejor is None or promedio > mejor["promedio"]:
+                    mejor = {"nombre": p["nombre"].value, "promedio": promedio}
+
+            except:
+                continue
+
+        if mejor:
+            resultado.value = f"🏆 Ganador por puntos Wilks: {mejor['nombre']} con {mejor['promedio']:.2f} puntos"
+        else:
+            resultado.value = "No se encontraron datos válidos"
+        page.update()
+
+    def mostrar_fuerza_bruta(e):
+        mas_fuerte = None
+        for p in participantes:
+            try:
+                pesos = [float(i.value) for i in p["intentos"] if i.value]
+                max_peso = max(pesos) if pesos else 0
+
+                if mas_fuerte is None or max_peso > mas_fuerte["peso"]:
+                    mas_fuerte = {"nombre": p["nombre"].value, "peso": max_peso}
+            except:
+                continue
+
+        if mas_fuerte:
+            resultado.value = f"💪 Participante más fuerte: {mas_fuerte['nombre']} con {mas_fuerte['peso']} kg"
+        else:
+            resultado.value = "No se encontraron datos válidos"
+        page.update()
+
+    # Layout principal
+    page.add(
+        ft.Column(
+            controls=[
+                ft.Row([
+                    ft.ElevatedButton("Agregar Participante", on_click=agregar_participante),
+                    ft.ElevatedButton("🏆 Ver ganador por Wilks", on_click=mostrar_ganador),
+                    ft.ElevatedButton("💪 Ver más fuerte", on_click=mostrar_fuerza_bruta),
+                ]),
+                ft.Container(contenedor_participantes, expand=True),
+                ft.Divider(),
+                ft.Text("Tabla de resultados:", size=18, weight="bold"),
+                tabla_resultados,
+                resultado
+            ],
+            expand=True
+        )
     )
 
-ft.app(target=main)
+ft.app(main)
 
