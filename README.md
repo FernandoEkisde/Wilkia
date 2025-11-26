@@ -1,41 +1,81 @@
-# Wilkia
+# Wilkia app
 
-Aplicación móvil para Android desarrollada con [Flet](https://flet.dev/) y Python 3.13.
+## Run the app
 
----
+### uv
 
-## Descripción
+Run as a desktop app:
 
-Wilkia es una aplicación diseñada para calcular puntos Wilks, proporcionando una tabla completa con los registros de los pesos levantados y el peso corporal de cada persona, para obtener sus puntos Wilks.
-Podrás ingresar el nombre del atleta, su peso corporal, su sexo y el peso levantado, obteniendo una información precisa y confiable para competencias de powerlifting.
+```
+uv run flet run
+```
 
-Creada con Flet, Wilkia aprovecha la potencia de Python para ofrecer una experiencia nativa, intuitiva y fluida en dispositivos Android.
+Run as a web app:
 
----
+```
+uv run flet run --web
+```
 
-## Características
+### Poetry
 
-- Interfaz intuitiva y moderna.
-- Compatible con Android (a través de compilación con Flet).
-- Fácil de usar y ligera.
-- Monetización posible mediante anuncios o compras dentro de la app.
-- Código escrito en Python 3.13.
+Install dependencies from `pyproject.toml`:
 
----
+```
+poetry install
+```
 
-## Requisitos
+Run as a desktop app:
 
-- Python 3.13 instalado en tu sistema.
-- [Flet](https://flet.dev/) instalado (`pip install flet`).
-- Entorno Android configurado para desplegar la app (opcional, si querés compilar directamente).
+```
+poetry run flet run
+```
 
----
+Run as a web app:
 
-## Instalación y configuración
+```
+poetry run flet run --web
+```
 
-1. Clonar el repositorio:
+For more details on running the app, refer to the [Getting Started Guide](https://flet.dev/docs/getting-started/).
 
-   ```bash
-   git clone https://github.com/FernandoEkisde/wilkia.git
-   cd wilkia
+## Build the app
 
+### Android
+
+```
+flet build apk -v
+```
+
+For more details on building and signing `.apk` or `.aab`, refer to the [Android Packaging Guide](https://flet.dev/docs/publish/android/).
+
+### iOS
+
+```
+flet build ipa -v
+```
+
+For more details on building and signing `.ipa`, refer to the [iOS Packaging Guide](https://flet.dev/docs/publish/ios/).
+
+### macOS
+
+```
+flet build macos -v
+```
+
+For more details on building macOS package, refer to the [macOS Packaging Guide](https://flet.dev/docs/publish/macos/).
+
+### Linux
+
+```
+flet build linux -v
+```
+
+For more details on building Linux package, refer to the [Linux Packaging Guide](https://flet.dev/docs/publish/linux/).
+
+### Windows
+
+```
+flet build windows -v
+```
+
+For more details on building Windows package, refer to the [Windows Packaging Guide](https://flet.dev/docs/publish/windows/).
