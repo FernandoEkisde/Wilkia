@@ -5,7 +5,7 @@ import flet as ft
 # ---------------------------
 
 def calcular_discos(peso_objetivo: float, peso_barra: float):
-    discos = [20, 10, 5, 2.5]
+    discos = [25, 20, 10, 5, 2.5, 1.25, 0.5]
     restante_total = peso_objetivo - peso_barra
     if restante_total < 0:
         return "El peso objetivo es menor que el peso de la barra."
@@ -213,6 +213,37 @@ def main(page: ft.Page):
         resultado.value = texto
         page.update()
 
+    # ---------------------------
+    #  Filtrar peso
+    # ---------------------------
+
+    def ordenar_por_peso(e):
+        # Crear lista temporal con (participante, peso_max)
+        lista = []
+        for p in participantes:
+            try:
+                maximo = max(
+                    float(i["field"].value)
+                    for i in p["intentos"]
+                    if i["field"].value
+                )
+                lista.append((p, maximo))
+            except:
+                continue
+
+        # Ordenar de menor a mayor
+        lista.sort(key=lambda x: x[1])
+
+        # Limpiar el contenedor
+        contenedor_participantes.controls.clear()
+
+        # Reagregar según el nuevo orden
+        for p, _ in lista:
+            contenedor_participantes.controls.append(p["contenedor"])
+
+        page.update()
+
+
     # ===========================
     #  UI PRINCIPAL
     # ===========================
@@ -223,6 +254,7 @@ def main(page: ft.Page):
                 ft.ElevatedButton("Agregar Participante", on_click=agregar_participante),
                 ft.ElevatedButton("🏆 Ranking Wilks", on_click=mostrar_ranking_wilks),
                 ft.ElevatedButton("💪 Ranking Fuerza", on_click=mostrar_ranking_fuerza),
+                ft.ElevatedButton("📉 Ordenar por peso (menor a mayor)", on_click=ordenar_por_peso),
                 peso_barra,
             ]),
             ft.Container(contenedor_participantes, expand=True),
